@@ -1,15 +1,13 @@
-with    nullable_columns_that_are_not_null as (
-        select case position 
-                 when 1 then '' 
-                 else ' union all ' 
-               end
+select  'select cast(null as nvarchar(128)) as "COLUMN_NAME" from dummy where 1=0 '
+||      STRING_AGG(stmt) as stmt
+from    (
+        select ' union all '
         ||     'select '''||column_name||''' '
-        ||     'from INVENTORY_OPTIMIZATION4 '
+        ||     'from "'||schema_name||'"."'||table_name||'" '
         ||     'having count(*) = count('||column_name||')' as stmt
         from   table_columns 
         where  schema_name  = coalesce(?, current_schema)
         and    table_name   = ?
         and    is_nullable  = 'TRUE'
-        order by position)
-select  STRING_AGG(stmt) stmt
-from    nullable_columns_that_are_not_null 
+        order by position
+        )
