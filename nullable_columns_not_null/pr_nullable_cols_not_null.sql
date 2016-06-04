@@ -28,7 +28,7 @@
 *
 **/
 
-CREATE PROCEDURE PR_NULLABLE_COLS_NOT_NULL (
+create PROCEDURE PR_NULLABLE_COLS_NOT_NULL (
   p_schema_name nvarchar(128)
 , p_table_name  nvarchar(128)
 ) 
@@ -39,19 +39,24 @@ AS
 BEGIN
   declare v_stmt clob;
 
-  select  'select cast(null as nvarchar(128)) as "COLUMN_NAME" '
-  ||      'from dummy '
-  ||      'where 1=0 '
+  select      'select cast(null as nvarchar(128)) as "SCHEMA_NAME" '
+  ||char(10)||',      cast(null as nvarchar(128)) as "TABLE_NAME" '
+  ||char(10)||',      cast(null as nvarchar(128)) as "COLUMN_NAME" '
+  ||char(10)||'from dummy '
+  ||char(10)||'where 1=0 '
   ||      STRING_AGG(stmt) as stmt
   into    v_stmt
   from    (
-          select char(10)||'union all'||char(10)
-          ||     'select '''||column_name||''' '
-          ||     'from "'||schema_name||'"."'||table_name||'" '
-          ||     'having count(*) = count('||column_name||')' as stmt
+          select 
+            char(10)||     'union all'
+          ||char(10)||     'select cast('''||schema_name||''' as nvarchar(128)) '
+          ||char(10)||     ',      cast('''||table_name||''' as nvarchar(128)) '
+          ||char(10)||     ',      cast('''||column_name||''' as nvarchar(128)) '
+          ||char(10)||     'from "'||schema_name||'"."'||table_name||'" '
+          ||char(10)||     'having count(*) = sum(case when '||column_name||' is null then 0 else 1 end)' as stmt
           from   table_columns 
-          where  schema_name  = coalesce(:p_schema_name, current_schema)
-          and    table_name   = :p_table_name
+          where  schema_name  like coalesce(:p_schema_name, current_schema)
+          and    table_name   like coalesce(:p_table_name, '%')
           and    is_nullable  = 'TRUE'
           order by position
   );
