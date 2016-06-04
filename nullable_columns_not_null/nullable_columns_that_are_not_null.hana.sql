@@ -17,8 +17,8 @@
 *
 * Parameters:
 * -----------
-* 1) SCHEMA_NAME (optional, default: CURRENT_SCHEMA)
-* 2) TABLE_NAME
+* 1) SCHEMA_NAME NVARCHAR(128) (optional, default: CURRENT_SCHEMA)
+* 2) TABLE_NAME  NVARCHAR(128)
 *
 * Description:
 * ------------
